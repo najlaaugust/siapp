@@ -1,0 +1,107 @@
+{% extends "base.twig" %}
+{% block content %}
+
+<style type="text/css">
+	.Title {font-size: 14px; font-weight: bold; text-align: center;}
+	.paid {color: green; font-style: italic; padding-left: 8px; font-weight: bold;}
+	#payment table {padding-left: 10px;}
+	#payment tbody th {font-weight: bold; text-align: left; padding-top: 10px; }
+	#payment tbody td {vertical-align: top; padding-left: 20px;}
+	#payment thead {font-weight: bold; text-align: left;}
+</style>
+
+<form name="myForm" method="POST" action="/payflow">
+<table id="payment" border="0" cellpadding="2" cellspacing="0" style="padding-left: 10px; width: 100%;">
+<tr>
+	<td class="Title">
+		<br>{{ current_app_year }} Summer Institute Online Payments</b></br></br>
+	</td>
+</tr>
+<tr><td><hr></td></tr>
+
+<tr>
+	<td>
+
+		<table id="payment" border="0" cellpadding="4" cellspacing="0" >
+        <thead>
+			<tr><th colspan="2">Applicant Information</th></tr>
+        </thead>
+
+        <tbody>
+        <tr>
+			<td>Confirmation #:</td>
+			<td>{{ confirm_num }}</td>
+		</tr>
+		<tr>
+			<td>Name:</td>
+			<td>
+			    {% if userInfo.title %} {{ userInfo.title }} {% endif %}
+				{{ userInfo.fname }} {{ userInfo.mname }} {{ userInfo.lname }}<br>
+				{{ userInfo.address1 }}<br>
+				{% if userInfo.address2 %} {{ userInfo.address2 }} <br> {% endif %}
+				{% if userInfo.address3 %} {{ userInfo.address3 }} <br> {% endif %}
+				{% if userInfo.city %} {{ userInfo.city }} <br> {% endif %}
+				{% if userInfo.state %} {{ userInfo.state }} <br> {% endif %}
+				{% if userInfo.zip %} {{ userInfo.zip }} <br> {% endif %}
+				{% if userInfo.CountryName %} {{ userInfo.CountryName }} <br> {% endif %}
+			</td>
+		</tr>
+
+		{% if userInfo.email %}<tr><td>Email:</td><td>{{ userInfo.email }}</td></tr>{% endif %}
+		{% if userInfo.hphone %}<tr><td>Home Telephone:</td><td>{{ userInfo.hphone }}</td></tr>{% endif %}
+		{% if userInfo.wphone %}<tr><td>Work Telephone:</td><td>{{ userInfo.wphone }}</td></tr>{% endif %}
+		{% if userInfo.fax %}<tr><td>Fax:</td><td>{{ userInfo.fax }}</td></tr>{% endif %}
+		{% if userInfo.umId %}<tr><td>UM ID:</td><td>{{ userInfo.umId }}</td></tr>{% endif %}
+
+    	</tbody>
+		 
+		{% if userInfo.PayAmount > 0 %}
+        <thead>
+			<tr><th colspan="2">Total Fees</th></tr>
+        </thead>
+        <tbody>
+        	<tr>
+            	<td colspan="2">
+                    {% if userInfo.CCNumber %}
+                    	${{ userInfo.PayAmount|number_format(2, '.', ',') }}
+                    	<span class="paid">Paid on {{ userInfo.CCDate.date|date("m/d/Y") }}</span>
+                    {% else %}
+                    	${{ userInfo.PayAmount|number_format(2, '.', ',') }}
+                    {% endif %}
+           	    </td>
+            </tr>
+        </tbody>
+        {% endif %}
+		
+		</table>
+
+	<table id="payment" border="0" cellpadding="4" cellspacing="0" >
+    <thead>
+        <tr><th>Course/Workshop</th></tr>
+    </thead>
+
+    <tbody>
+    {% for item in courseSignedUpFor %}
+    	<tr><td><li>{{ item.course_full_name }} (<em>{{ item.schedule_date }}</em>)</li></td></tr>
+    {% endfor %}
+
+    {% if userInfo.PaymentStat == "credit" and userInfo.AllowOnlinePayment == 1 %}
+    <!-- PaymentStatus must equal "credit" and PayAmount > 0; This can be set in the Student FRM_StudentsEdit form in MS Access -->
+    <tr>
+        <td><br><br>
+        	<input type="hidden" name="OnlineID" value="{{ userInfo.OnlineID }}" />
+            <input type="submit" value="Make Payment" /><br />
+            <span style="font-size: 90%; font-style: italic;">
+            * Summer Institute uses PayPal for credit card processing.
+			You will be redirected to a secure PayPal site to enter your credit card info.</span>
+        </td>
+    </tr>
+    {% endif %}
+
+    </tbody>
+    </table>
+</tr>
+
+</table>
+</form>
+{% endblock %}
