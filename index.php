@@ -11,6 +11,8 @@ require __DIR__ . '/src/dependencies.php';
 // Register routes
 require __DIR__ . '/src/routes.php';
 
+require __DIR__ . '/src/emailguy.php';
+
 
 /*
 spl_autoload_register(function ($classname) {

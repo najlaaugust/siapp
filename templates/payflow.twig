@@ -1,0 +1,43 @@
+<!--- Automatically post the page to PayFlow for credit card processing--->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<body>
+    <form name="myForm" method="POST" action="https://payflowlink.paypal.com">
+
+        <!-- The following fields are required: -->
+        <input type="hidden" 	name="LOGIN" 	value="umichisr">
+        <input type="hidden" 	name="PARTNER" 	value="paypal">
+        <input type="hidden"	name="TYPE" 	value="S">
+
+        <!--- USER1 variable is used to specify silent postback URL --->
+        <input type="hidden" 	name="USER1" value="http://isr-wp.isr.umich.edu/siapp/paypalcallback" />
+
+        <!--- USER2 variable is used for paypal user to return 
+        <input type="hidden"	name="USER2" value="index.cfm" />--->
+
+        <!--- Revenue short code --->
+        <input type="hidden" 	name="COMMENT1"		value="{{ COMMENT1 }}"/><!-- Revenue shortcode --->
+
+        <!--- Additional info to be display in billing report i.e: name, descr, etc.	 --->
+        <input type="hidden" 	name="COMMENT2"		value="{{ COMMENT2 }}"/>
+
+        <input type="hidden" 	name="CUSTID"		value="{{ CUSTID }}" />
+        <!---<input type="hidden"	name="AMOUNT" 		value="{{ AMOUNT }}" />-->
+        <input type="hidden"	name="AMOUNT" 		value="0.01" />
+        <input type="hidden" 	name="DESCRIPTION" 	value="{{ DESCRIPTION }}" />
+        <input type="hidden" 	name="NAME" 		value="{{ NAME }}"/>
+        <input type="hidden" 	name="ADDRESS" 		value="{{ ADDRESS }}" />
+        <input type="hidden" 	name="CITY" 		value="{{ CITY }}"/>
+        <input type="hidden" 	name="STATE" 		value="{{ STATE }}"/>
+        <input type="hidden" 	name="ZIP" 			value="{{ ZIP }}"/>
+        <input type="hidden" 	name="COUNTRY" 		value="{{ COUNTRY }}"/>
+        <input type="hidden" 	name="PHONE" 		value="{{ PHONE }}"/>
+        <input type="hidden" 	name="EMAIL" 		value="{{ EMAIL }}"/>
+
+    	<!--- Send payment process to PayFlow --->
+        <script language="javascript">
+            document.myForm.submit();
+        </script>
+
+    </form>
+</body>
+</html>

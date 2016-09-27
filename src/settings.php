@@ -11,7 +11,15 @@ return [
 				// Monolog settings
 				'logger' => [
 						'name' => 'Summer Institute Webservice',
-						'path' => __DIR__ . '/logs/app.log'
-				]
+						'path' => __DIR__ . '/../logs/app.log'
+				],
+				
+				// email settings
+				'emailguy' => [
+						'server' => 'smtp.isr.umich.edu',
+						'user' => '',
+						'pwd' => '',
+						'from' => 'isr-summer@umich.edu'
+				]				
 		],
 ];

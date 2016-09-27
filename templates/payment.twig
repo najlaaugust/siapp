@@ -30,7 +30,7 @@
         <tbody>
         <tr>
 			<td>Confirmation #:</td>
-			<td>{{ confirm_num }}</td>
+			<td>{{ Confirm_Num }}</td>
 		</tr>
 		<tr>
 			<td>Name:</td>
@@ -89,7 +89,7 @@
     <!-- PaymentStatus must equal "credit" and PayAmount > 0; This can be set in the Student FRM_StudentsEdit form in MS Access -->
     <tr>
         <td><br><br>
-        	<input type="hidden" name="OnlineID" value="{{ userInfo.OnlineID }}" />
+        	<input type="hidden" id="OnlineID" name="OnlineID" value="{{ userInfo.OnlineID }}" />
             <input type="submit" value="Make Payment" /><br />
             <span style="font-size: 90%; font-style: italic;">
             * Summer Institute uses PayPal for credit card processing.
