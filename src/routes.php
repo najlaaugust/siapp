@@ -12,6 +12,32 @@ function ordinal_suffix($num){
 	return 'th';
 }
 
+function getDataFromWebService($url) {	
+	$proxy = '141.211.153.22:3128';
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_PROXY, $proxy);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	// Disable SSL verification
+	//curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+	$info = json_decode(curl_exec($ch));
+	curl_close($ch);
+	return $info;
+}
+
+function sendDataToWebService($url, $myvars) {	
+	$ch = curl_init( $url );
+	curl_setopt( $ch, CURLOPT_POST, 1);
+	curl_setopt( $ch, CURLOPT_POSTFIELDS, $myvars);
+	curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
+	curl_setopt( $ch, CURLOPT_HEADER, 0);
+	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+	
+	$response = curl_exec( $ch );	
+	return $response;
+}
+/*
 $app->post('/paypalcallback', function ($request, $response, $args) {
 	
 	$data = $request->getParsedBody();
@@ -34,22 +60,16 @@ $app->post('/paypalcallback', function ($request, $response, $args) {
 	if 	($RESULT == "0" && $RESPMSG == "Approved") {
 		//update registation with payment info from PayFlow, once payment has been posted --->
 		
-		$url = 'http://isr-wp.isr.umich.edu/siapp_pay/registration/update';
+		$url = 'http://projects.isr.umich.edu/siapp_pay/registration/update';
 		$myvars = 'PNREF=' . $PNREF . '&NAME=' . $NAME . '&EMAIL=' . $EMAIL . '&PHONE=' . $PHONE . '&ADDRESS=' . $ADDRESS . '&CITY=' . $CITY . '&STATE=' . $STATE . '&ZIP=' . $ZIP . '&COUNTRY=' . $COUNTRY . '&CUSTID=' . $CUSTID;
+				
+		$response = sendDataToWebService($url, $myvars);
 		
-		$ch = curl_init( $url );
-		curl_setopt( $ch, CURLOPT_POST, 1);
-		curl_setopt( $ch, CURLOPT_POSTFIELDS, $myvars);
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-		curl_setopt( $ch, CURLOPT_HEADER, 0);
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+		$url = "http://projects.isr.umich.edu/siapp_pay/reginfo_foremail/$CUSTID";
+		$regInfo = getDataFromWebService($url);
 		
-		$response = curl_exec( $ch );		
-		
-		//Send Email confirmation to SI --->
-		$regInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/reginfo_foremail/$CUSTID"));
-		
-		$courseInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/courses"));
+		$url = "http://projects.isr.umich.edu/siapp_pay/courses";
+		$courseInfo = getDataFromWebService($url);
 		
 		$courseSignedUpFor = array();
 		
@@ -64,7 +84,7 @@ $app->post('/paypalcallback', function ($request, $response, $args) {
 		
 		$address = sprintf('%1$s %2$s %3$s', $regInfo->address1, $regInfo->address2, $regInfo->address3);
 		
-		
+		//Send Email confirmation to SI --->		
 		$this->emailguy->sendEmail(
 				$this->logger,
 				$regInfo->CurrentYear, $regInfo->Confirm_Num, $PNREF,
@@ -75,31 +95,27 @@ $app->post('/paypalcallback', function ($request, $response, $args) {
 				$courseSignedUpFor);
 	}
 	
-	$url = 'http://isr-wp.isr.umich.edu/siapp_pay/webpay/new';
+	$url = 'http://projects.isr.umich.edu/siapp_pay/webpay/new';
 	$myvars = 'PNREF=' . $PNREF . '&RESULT=' . $RESULT . '&RESPMSG=' . $RESPMSG . '&AMOUNT=' . $AMOUNT . '&CUSTID=' . $CUSTID;
 	
-	$ch = curl_init( $url );
-	curl_setopt( $ch, CURLOPT_POST, 1);
-	curl_setopt( $ch, CURLOPT_POSTFIELDS, $myvars);
-	curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1);
-	curl_setopt( $ch, CURLOPT_HEADER, 0);
-	curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
+	$response = sendDataToWebService($url, $myvars);
 	
-	$response = curl_exec( $ch );
-	
-	$this->logger->addInfo("done here.");
+	$this->logger->addInfo("done with all.");
 
 	exit;
-});
+});*/
 
 $app->post('/payflow', function ($request, $response, $args) {	
 	//Always get app info
-	$appInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/currentappinfo"));
-	
+	$url = "http://projects.isr.umich.edu/siapp_pay/currentappinfo";
+	$appInfo = getDataFromWebService($url);
+		
 	//now get reg info	
 	$data = $request->getParsedBody();
 	$OnlineID = filter_var($data['OnlineID'], FILTER_SANITIZE_STRING);
-	$regInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/reginfo/$OnlineID"));
+	
+	$url = "http://projects.isr.umich.edu/siapp_pay/reginfo/$OnlineID";
+	$regInfo = getDataFromWebService($url);
 			
 	//<!--- USER2 variable is used for paypal user to return --->
 	//<input type="hidden"	name="USER2" 	value="index.cfm" />
@@ -166,9 +182,10 @@ $app->post('/payflow', function ($request, $response, $args) {
 
 
 $app->get('/payment', function ($request, $response, $args) {
-	$appInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/currentappinfo"));
-
 	//Always get app info
+	$url = "http://projects.isr.umich.edu/siapp_pay/currentappinfo";
+	$appInfo = getDataFromWebService($url);
+	
 	$currentYear = (int) $appInfo->current_app_year;
 	$currentYear = $currentYear - 1947;	
 	$currentYearDisplay = $currentYear . ordinal_suffix($currentYear);
@@ -182,20 +199,26 @@ $app->get('/payment', function ($request, $response, $args) {
 
 
 $app->post('/search', function ($request, $response, $args) {
+	$this->logger->addInfo("Searching");
 	$data = $request->getParsedBody();
 	
 	$ConfirmNum = filter_var($data['ConfirmNum'], FILTER_SANITIZE_STRING);
 	$LastName = filter_var($data['LastName'], FILTER_SANITIZE_STRING);
 
 	//Always get app info 
-	$appInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/currentappinfo"));
+	$url = "http://projects.isr.umich.edu/siapp_pay/currentappinfo";
+	$appInfo = getDataFromWebService($url);	
 	
 	$currentYear = (int) $appInfo->current_app_year;
+	
+	$this->logger->addInfo("The year is-" . $currentYear);
+	
 	$currentYear = $currentYear - 1947;
 	$currentYearDisplay = $currentYear . ordinal_suffix($currentYear);
 	
 	//now get user info
-	$userInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/isvalid/$ConfirmNum/$LastName"));
+	$url = "http://projects.isr.umich.edu/siapp_pay/isvalid/$ConfirmNum/$LastName";
+	$userInfo = getDataFromWebService($url);	
 	
 	if (isset($userInfo->notfound)) {
 		return $this->view->render($response, 'index.twig', array( 
@@ -207,7 +230,8 @@ $app->post('/search', function ($request, $response, $args) {
 	}
 	
 	//also get course info
-	$courseInfo = json_decode(file_get_contents("http://isr-wp.isr.umich.edu/siapp_pay/courses"));
+	$url = "http://projects.isr.umich.edu/siapp_pay/courses";
+	$courseInfo = getDataFromWebService($url);	
 	
 	$courseSignedUpFor = array();
 	
